@@ -31,12 +31,12 @@ public class FileManager {
         }
     }
 
-    public Path createOutputDirectoryIfNeeded(String directory) throws IOException {
+    public File createOutputDirectoryIfNeeded(String directory) throws IOException {
         Path dir = Path.of(directory);
         if (directoryExists(directory)) {
-            return dir;
+            return dir.toFile();
         }
-        return Files.createDirectory(dir);
+        return Files.createDirectory(dir).toFile();
     }
 
     private boolean directoryExists(String directory) {

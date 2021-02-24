@@ -11,10 +11,8 @@ import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.nio.file.Path;
+import java.util.*;
 
 public class Main {
 
@@ -51,18 +49,16 @@ public class Main {
 
         try {
             cmd = parser.parse(options, args);
-
             if (cmd.hasOption("cp")) {
                 String classpath = cmd.getOptionValue("cp");
                 System.out.println("We have --classpath option = " + classpath);
             }
             if (cmd.hasOption("d")) {
                 String directory = cmd.getOptionValue("d");
-                System.out.println("Printing out files in directory");
                 FileManager fm = new FileManager();
-                for (File file: fm.getAllFilesInDirectory(directory, ".java")) {
-                    System.out.println(file.getName());
-                }
+                List<File> files = fm.getAllFilesInDirectory(directory, ".java");
+                File outputDirectory = fm.createOutputDirectoryIfNeeded("out/");
+                compile(files, outputDirectory);
             }
         } catch (ParseException pe) {
             System.out.println("Error parsing command-line arguments!");
@@ -72,29 +68,25 @@ public class Main {
         }
     }
 
-    private static void analyzeThenCompile() throws IOException {
+    private static void compile(List<File> files, File outputDirectory) throws IOException {
+        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+
+        try (StandardJavaFileManager mgr = compiler.getStandardFileManager(null, null, null)) {
+            Iterable<? extends JavaFileObject> sources = mgr.getJavaFileObjectsFromFiles(files);
+            mgr.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(outputDirectory));
+            JavaCompiler.CompilationTask task = compiler.getTask(null, mgr, null, null, null, sources);
+            task.call();
+        }
+    }
+
+    private static void analyze() throws IOException {
         ClassDependenciesAnalyzer cda = new ClassDependenciesAnalyzer();
         ClassDependentsAccumulator acc = new ClassDependentsAccumulator();
 
-        List<File> files = new ArrayList<>();
-
         for (String classFile : CLASSFILES_TO_ANALYZE) {
-            files.add(new File(COMPILATION_PATH_ROOT + classFile + JAVA_FILE_EXTENSION));
             acc.addClass(cda.getClassAnalysis(new File(CLASSFILES_BASEPATH + classFile + CLASS_FILE_EXTENSION)));
         }
 
         System.out.println(acc.getDependentsMap());
-
-        JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-        DiagnosticCollector<JavaFileObject> ds = new
-                DiagnosticCollector<>();
-        try (StandardJavaFileManager mgr = compiler.getStandardFileManager(ds, null, null)) {
-            Iterable<? extends JavaFileObject> sources = mgr.getJavaFileObjectsFromFiles(files);
-            JavaCompiler.CompilationTask task = compiler.getTask(null, mgr, ds, null, null, sources);
-            task.call();
-        }
-        for (Diagnostic<? extends JavaFileObject> d : ds.getDiagnostics()) {
-            System.out.format("Line: %d, %s in %s", d.getLineNumber(), d.getMessage(null), d.getSource().getName());
-        }
     }
 }
