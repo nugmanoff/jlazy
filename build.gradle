@@ -15,6 +15,7 @@ dependencies {
     compile 'org.ow2.asm:asm:9.1'
     implementation group: 'com.google.guava', name: 'guava', version: '30.1-jre'
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.11'
+    implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
 }
 
 test {

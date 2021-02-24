@@ -4,6 +4,7 @@ import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.apache.commons.cli.*;
 
 import javax.tools.*;
 import java.io.File;
@@ -28,7 +29,45 @@ public class Main {
             .add("ClassWithPrimitiveConstant")
             .build();
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) throws IOException {
+
+        Options options = new Options();
+        options.addOption(Option.builder("cp")
+                .longOpt("classpath")
+                .hasArg(true)
+                .desc("Java classpath with dependencies")
+                .required(false)
+                .build());
+        options.addOption(Option.builder("d")
+                .longOpt("dir")
+                .hasArg(true)
+                .desc("Directory with Java sources files to compile")
+                .required(true)
+                .build());
+
+        CommandLineParser parser = new DefaultParser();
+        CommandLine cmd = null;
+
+        try {
+            cmd = parser.parse(options, args);
+
+            if (cmd.hasOption("cp")) {
+                String classpath = cmd.getOptionValue("cp");
+                System.out.println("We have --classpath option = " + classpath);
+            }
+            if (cmd.hasOption("d")) {
+                String directory = cmd.getOptionValue("d");
+                System.out.println("We have --directory option = " + directory);
+            }
+        } catch (ParseException pe) {
+            System.out.println("Error parsing command-line arguments!");
+            HelpFormatter formatter = new HelpFormatter();
+            formatter.printHelp( "jlazy", options );
+            System.exit(1);
+        }
+    }
+
+    private static void analyzeThenCompile() throws IOException {
         ClassDependenciesAnalyzer cda = new ClassDependenciesAnalyzer();
         ClassDependentsAccumulator acc = new ClassDependentsAccumulator();
 
