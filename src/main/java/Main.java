@@ -4,6 +4,7 @@ import com.google.common.base.Functions;
 import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import files.FileManager;
 import org.apache.commons.cli.*;
 
 import javax.tools.*;
@@ -57,7 +58,11 @@ public class Main {
             }
             if (cmd.hasOption("d")) {
                 String directory = cmd.getOptionValue("d");
-                System.out.println("We have --directory option = " + directory);
+                System.out.println("Printing out files in directory");
+                FileManager fm = new FileManager();
+                for (File file: fm.getAllFilesInDirectory(directory, ".java")) {
+                    System.out.println(file.getName());
+                }
             }
         } catch (ParseException pe) {
             System.out.println("Error parsing command-line arguments!");
