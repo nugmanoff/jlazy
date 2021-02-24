@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 public class FileManager {
 
     public List<File> getAllFilesInDirectory(String directory, String extension) {
-        try (Stream<Path> walk = Files.walk(Paths.get(directory))) {
+        try (Stream<Path> walk = Files.walk(Path.of(directory))) {
             return walk
                     .map(Path::toFile)
                     .filter(f -> f.getName().endsWith(extension))
@@ -29,5 +29,18 @@ public class FileManager {
             e.printStackTrace();
             return new ArrayList<File>();
         }
+    }
+
+    public Path createOutputDirectoryIfNeeded(String directory) throws IOException {
+        Path dir = Path.of(directory);
+        if (directoryExists(directory)) {
+            return dir;
+        }
+        return Files.createDirectory(dir);
+    }
+
+    private boolean directoryExists(String directory) {
+        File dir = new File(directory);
+        return dir.isDirectory() && dir.exists();
     }
 }
