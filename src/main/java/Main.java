@@ -1,29 +1,27 @@
 import analysis.ClassDependenciesAnalyzer;
 import analysis.ClassDependentsAccumulator;
+import analysis.ClassSetAnalysis;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+import com.sun.source.util.TaskListener;
 import files.Cache;
 import files.FileChange;
+import files.FileChangeType;
 import files.FileManager;
 import org.apache.commons.cli.*;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.*;
 
 public class Main {
 
-    private static final String COMPILATION_PATH_ROOT = "src/main/java/fixtures/";
-    private static final String CLASSFILES_BASEPATH = "build/classes/java/main/fixtures/";
-    private static final String JAVA_FILE_EXTENSION = ".java";
+    private static final String CLASSFILES_BASEPATH = "out/";
     private static final String CLASS_FILE_EXTENSION = ".class";
-    private static final List<String> CLASSFILES_TO_ANALYZE = ImmutableList.<String>builder()
-            .add("AnotherClass")
-            .add("DummyClass")
-            .add("SomeInterface")
-            .add("ClassWithClassConstant")
-            .add("ClassWithPrimitiveConstant")
-            .build();
+    private static final String JAVA_FILE_EXTENSION = ".java";
 
     public static void main(String[] args) throws IOException {
 
@@ -46,20 +44,35 @@ public class Main {
 
         try {
             cmd = parser.parse(options, args);
-            if (cmd.hasOption("cp")) {
-                String classpath = cmd.getOptionValue("cp");
-                System.out.println("We have --classpath option = " + classpath);
-            }
+//            if (cmd.hasOption("cp")) {
+//                String classpath = cmd.getOptionValue("cp");
+//                System.out.println("We have --classpath option = " + classpath);
+//            }
             if (cmd.hasOption("d")) {
                 String directory = cmd.getOptionValue("d");
                 Cache cache = new Cache(createCacheFileIfNeeded("cache", "fileHashes.bin"));
                 FileManager fm = new FileManager(cache);
+
+
+                List<File> dirtyFiles = new ArrayList<>();
                 for (FileChange fc: fm.getFileChangesList("src/", ".java")) {
-                    System.out.println("Filename=" + fc.getFile().getName() + "; Type=" + fc.getType());
+                    dirtyFiles.add(fc.getFile());
                 }
-                List<File> files = fm.getAllFilesInDirectory(directory, ".java");
                 File outputDirectory = fm.createOutputDirectoryIfNeeded("out/");
-                compile(files, outputDirectory);
+
+
+//                List<File> filesToCompile = new ArrayList<>();
+//
+//                for(File file : FileManager.getAllFilesInDirectory(directory, ".java")) {
+//
+//                    if (actualDependencies.contains(file.getName())) {
+//                        System.out.println("Add file to compile: " + file.getName());
+//                        filesToCompile.add(file);
+//                    }
+//                }
+                compile(dirtyFiles, outputDirectory);
+                Set<String> actualDependencies = analyzeAndGetActualDependents(dirtyFiles);
+
             }
         } catch (ParseException | ClassNotFoundException pe) {
             System.out.println("Error parsing command-line arguments!");
@@ -78,24 +91,39 @@ public class Main {
     }
 
     private static void compile(List<File> files, File outputDirectory) throws IOException {
+        if (files.isEmpty()) {
+            System.out.println("Nothing to compile! Everything's great!");
+            return;
+        }
         JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 
         try (StandardJavaFileManager mgr = compiler.getStandardFileManager(null, null, null)) {
             Iterable<? extends JavaFileObject> sources = mgr.getJavaFileObjectsFromFiles(files);
             mgr.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(outputDirectory));
             JavaCompiler.CompilationTask task = compiler.getTask(null, mgr, null, null, null, sources);
+
             task.call();
         }
     }
 
-    private static void analyze() throws IOException {
+    private static Set<String> analyzeAndGetActualDependents(List<File> dirtyFiles) {
         ClassDependenciesAnalyzer cda = new ClassDependenciesAnalyzer();
         ClassDependentsAccumulator acc = new ClassDependentsAccumulator();
 
-        for (String classFile : CLASSFILES_TO_ANALYZE) {
-            acc.addClass(cda.getClassAnalysis(new File(CLASSFILES_BASEPATH + classFile + CLASS_FILE_EXTENSION)));
+        for (File classFile : FileManager.getAllFilesInDirectory("out/", ".class")) {
+            acc.addClass(cda.getClassAnalysis(classFile));
         }
+        ClassSetAnalysis csa = new ClassSetAnalysis(acc.getAnalysis());
 
         System.out.println(acc.getDependentsMap());
+
+        List<String> classNames = new ArrayList<>();
+//        for (File dirtyFile : dirtyFiles) {
+//            String className = StringUtils.removeEnd(dirtyFile.getName(), JAVA_FILE_EXTENSION);
+//            System.out.println(className);
+//            classNames.add(className);
+//        }
+
+        return csa.getRelevantDependents(classNames, new HashSet<>()).getAllDependentClasses();
     }
 }

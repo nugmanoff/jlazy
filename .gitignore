@@ -1,6 +1,11 @@
 # IDEA & Gradle
 .gradle/
 .idea/
+.jlazy/
+cache/
+out/
+
+*.DS_Store
 
 # Build
 build/

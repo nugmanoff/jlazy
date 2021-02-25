@@ -28,6 +28,9 @@ class ClassRelevancyFilter implements Predicate<String> {
     @Override
     public boolean test(String className) {
         return !className.startsWith("java.")
+                && !className.startsWith("javax.")
+                && !className.startsWith("org.")
+                && !className.startsWith("com.")
                 && !excludedClassName.equals(className)
                 && !PRIMITIVES.contains(className);
     }

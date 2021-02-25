@@ -74,7 +74,7 @@ public class FileManager {
         }
     }
 
-    public List<File> getAllFilesInDirectory(String directory, String extension) {
+    public static List<File> getAllFilesInDirectory(String directory, String extension) {
         try (Stream<Path> walk = Files.walk(Path.of(directory))) {
             return walk
                     .map(Path::toFile)
@@ -85,8 +85,6 @@ public class FileManager {
             return new ArrayList<File>();
         }
     }
-
-
 
     public File createOutputDirectoryIfNeeded(String directory) throws IOException {
         Path dir = Path.of(directory);

@@ -71,14 +71,6 @@ public class ClassSetAnalysis {
                                          Iterable<String> privateDependentClasses,
                                          Iterable<String> accessibleDependentClasses) {
 
-        for (String privateDependentClass : privateDependentClasses) {
-            if (!visitedClasses.add(privateDependentClass)) {
-                continue;
-            }
-            privateResultClasses.add(privateDependentClass);
-            DependentsSet currentDependents = getDependents(privateDependentClass);
-        }
-
         processTransitiveDependentClasses(visitedClasses, accessibleResultClasses, accessibleDependentClasses);
     }
 
