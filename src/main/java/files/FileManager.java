@@ -20,17 +20,23 @@ import java.util.stream.Stream;
 
 public class FileManager {
 
+    // Создаёт файл, и необходимые родительские директории, если это необходимо
     public File createFile(Path path) throws IOException {
+        if(path.toFile().exists()) {
+            return path.toFile();
+        }
         if(!path.getParent().toFile().exists()) {
             createDirectory(path);
         }
         return Files.createFile(path).toFile();
     }
 
+    // Создаёт директорию, и необходимые родительские директории, если это необходимо
     public File createDirectory(Path path) throws IOException {
         return Files.createDirectories(path).toFile();
     }
 
+    // Достаёт из директории все файлы с определённым расширением
     public List<File> getAllFilesInDirectory(Path directory, String extension) {
         try (Stream<Path> walk = Files.walk(directory)) {
             return walk

@@ -69,11 +69,11 @@ public class Main {
 //                        filesToCompile.add(file);
 //                    }
 //                }
-                compile(dirtyFiles, outputDirectory);
+//                compile(dirtyFiles, outputDirectory);
                 Set<String> actualDependencies = analyzeAndGetActualDependents(dirtyFiles);
 
             }
-        } catch (ParseException | ClassNotFoundException pe) {
+        } catch (ParseException e) {
             System.out.println("Error parsing command-line arguments!");
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp( "jlazy", options );
