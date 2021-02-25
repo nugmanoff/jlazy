@@ -16,6 +16,8 @@ public abstract class CompilationConfiguration {
 
     public abstract File getOutputDirectory();
 
+    public abstract File getSourcesDirectory();
+
     private static class DefaultCompilationConfiguration extends CompilationConfiguration {
         private static final CompilationConfiguration.DefaultCompilationConfiguration INSTANCE = new CompilationConfiguration.DefaultCompilationConfiguration();
 
@@ -26,12 +28,17 @@ public abstract class CompilationConfiguration {
 
         @Override
         public File getMetadataDirectory() {
-            return null;
+            return new File(".jlazy/");
         }
 
         @Override
         public File getOutputDirectory() {
-            return null;
+            return new File("out/");
+        }
+
+        @Override
+        public File getSourcesDirectory() {
+            return new File("src/");
         }
     }
 }

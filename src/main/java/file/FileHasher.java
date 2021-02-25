@@ -1,4 +1,4 @@
-package files;
+package file;
 
 import org.apache.commons.codec.digest.DigestUtils;
 

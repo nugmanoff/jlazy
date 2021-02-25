@@ -1,19 +1,12 @@
 import analysis.ClassDependenciesAnalyzer;
 import analysis.ClassDependentsAccumulator;
 import analysis.ClassSetAnalysis;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
-import com.sun.source.util.TaskListener;
-import files.Cache;
-import files.FileChange;
-import files.FileManager;
+import file.FileManager;
 import org.apache.commons.cli.*;
-import org.apache.commons.lang3.StringUtils;
 
 import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.util.*;
 
 public class Main {
@@ -49,7 +42,7 @@ public class Main {
 //            }
             if (cmd.hasOption("d")) {
                 String directory = cmd.getOptionValue("d");
-                Cache cache = new Cache(createCacheFileIfNeeded("cache", "fileHashes.bin"));
+//                Cache cache = new Cache(createCacheFileIfNeeded("cache", "fileHashes.bin"));
                 FileManager fm = new FileManager();
 
 
