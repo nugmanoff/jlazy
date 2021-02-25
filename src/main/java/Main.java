@@ -1,17 +1,14 @@
 import analysis.ClassDependenciesAnalyzer;
 import analysis.ClassDependentsAccumulator;
-import com.google.common.base.Functions;
-import com.google.common.collect.ImmutableCollection;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
+import files.Cache;
+import files.FileChange;
 import files.FileManager;
 import org.apache.commons.cli.*;
 
 import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.*;
 
 public class Main {
@@ -55,17 +52,29 @@ public class Main {
             }
             if (cmd.hasOption("d")) {
                 String directory = cmd.getOptionValue("d");
-                FileManager fm = new FileManager();
+                Cache cache = new Cache(createCacheFileIfNeeded("cache", "fileHashes.bin"));
+                FileManager fm = new FileManager(cache);
+                for (FileChange fc: fm.getFileChangesList("src/", ".java")) {
+                    System.out.println("Filename=" + fc.getFile().getName() + "; Type=" + fc.getType());
+                }
                 List<File> files = fm.getAllFilesInDirectory(directory, ".java");
                 File outputDirectory = fm.createOutputDirectoryIfNeeded("out/");
                 compile(files, outputDirectory);
             }
-        } catch (ParseException pe) {
+        } catch (ParseException | ClassNotFoundException pe) {
             System.out.println("Error parsing command-line arguments!");
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp( "jlazy", options );
             System.exit(1);
         }
+    }
+
+    private static File createCacheFileIfNeeded(String directory, String filename) throws IOException {
+        File dir = new File(directory);
+        if (!dir.exists()) dir.mkdirs();
+        File file = new File(directory + "/" + filename);
+        file.createNewFile();
+        return file;
     }
 
     private static void compile(List<File> files, File outputDirectory) throws IOException {
