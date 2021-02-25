@@ -8,28 +8,16 @@ import java.util.List;
 
 public class CleanCompilationStrategy extends CompilationStrategy {
 
-    public CleanCompilationStrategy(JavaCompiler compiler) {
-        super(compiler);
+    public CleanCompilationStrategy(JavaCompiler compiler, CompilationConfiguration configuration) {
+        super(compiler, configuration);
     }
 
     @Override
-    public JavaCompiler.CompilationTask getCompilationTask(List<File> files, File outputDirectory) {
+    public List<File> getFilesToCompile() {
         /*
-          1. Basic compilationTask
-
+            1. Get `allSourceFiles`
+            2. Return `allSourceFiles`
          */
-        if (files.isEmpty()) {
-            // TODO Replace with proper logging
-            System.out.println("Nothing to compile! Everything's great!");
-            return null;
-        }
-        StandardJavaFileManager compilerFileManager = compiler.getStandardFileManager(null, null, null);
-        Iterable<? extends JavaFileObject> sources = compilerFileManager.getJavaFileObjectsFromFiles(files);
-        try {
-            compilerFileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(outputDirectory));
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return compiler.getTask(null, compilerFileManager, null, null, null, sources);
+        return null;
     }
 }
