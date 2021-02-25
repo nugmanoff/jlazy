@@ -7,17 +7,17 @@ import java.util.Map;
 public class Cache {
 
     private final File persistentFile;
-    private HashMap<String, String> map = new HashMap<>();
+    private Map<String, String> map = new HashMap<>();
 
     public Cache(File persistentFile) {
         this.persistentFile = persistentFile;
     }
 
-    public void put(HashMap<String, String> map) {
+    public void put(Map<String, String> map) {
         this.map = map;
     }
 
-    public HashMap<String, String> get() {
+    public Map<String, String> get() {
         return map;
     }
 

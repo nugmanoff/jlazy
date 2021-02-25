@@ -6,7 +6,6 @@ import com.google.common.collect.Lists;
 import com.sun.source.util.TaskListener;
 import files.Cache;
 import files.FileChange;
-import files.FileChangeType;
 import files.FileManager;
 import org.apache.commons.cli.*;
 import org.apache.commons.lang3.StringUtils;

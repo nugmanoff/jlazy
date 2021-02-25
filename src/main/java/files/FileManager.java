@@ -28,50 +28,12 @@ public class FileManager {
 
     public List<FileChange> getFileChangesList(String directory, String extension) throws IOException, ClassNotFoundException {
         cache.prepareToRead();
-        HashMap<String, String> oldFiles = cache.get();
-        HashMap<String, String> newFiles = new HashMap<>();
-
-        for (File file: getAllFilesInDirectory(directory, extension)) {
-            newFiles.put(file.getPath(), getHashOf(file));
-        }
+        Map<String, String> oldFiles = cache.get();
+        Map<String, String> newFiles = FileHasher.getHashesOf(getAllFilesInDirectory(directory, extension));
         cache.put(newFiles);
         cache.save();
 
-        // Diffing
-
-        List<FileChange> fileChanges = new ArrayList<>();
-        MapDifference<String, String> diff = Maps.difference(oldFiles, newFiles);
-
-        Map<String, MapDifference.ValueDifference<String>> entriesDiffering = diff.entriesDiffering();
-        for (String diffEntryKey: entriesDiffering.keySet()) {
-            fileChanges.add(new FileChange(FileChangeType.MODIFY, new File(diffEntryKey)));
-        }
-
-        Map<String, String> entriesOnlyOnRight = diff.entriesOnlyOnRight();
-        for (String onlyOnRightKey: entriesOnlyOnRight.keySet()) {
-            fileChanges.add(new FileChange(FileChangeType.ADD, new File(onlyOnRightKey)));
-        }
-
-        Map<String, String> entriesOnlyOnLeft = diff.entriesOnlyOnLeft();
-        for (String onlyOnLeftKey: entriesOnlyOnLeft.keySet()) {
-            fileChanges.add(new FileChange(FileChangeType.REMOVE, new File(onlyOnLeftKey)));
-        }
-
-        return fileChanges;
-    }
-
-    public Map<String, String> getHashesOfFiles(List<File> files) throws IOException {
-        Map<String, String> hashes = new HashMap<>();
-        for (File file: files) {
-            hashes.put(file.getPath(), getHashOf(file));
-        }
-        return hashes;
-    }
-
-    public String getHashOf(File file) throws IOException {
-        try (InputStream is = Files.newInputStream(file.toPath())) {
-            return DigestUtils.md5Hex(is);
-        }
+        return FileChangeDetector.getFileChanges(oldFiles, newFiles);
     }
 
     public static List<File> getAllFilesInDirectory(String directory, String extension) {

@@ -3,10 +3,10 @@ package files;
 import java.io.File;
 
 public class FileChange {
-    private final FileChangeType type;
+    private final Type type;
     private final File file;
 
-    public FileChange(FileChangeType type, File file) {
+    public FileChange(Type type, File file) {
         this.type = type;
         this.file = file;
     }
@@ -15,7 +15,13 @@ public class FileChange {
         return file;
     }
 
-    public FileChangeType getType() {
+    public Type getType() {
         return type;
+    }
+
+    public enum Type {
+        ADD,
+        MODIFY,
+        REMOVE
     }
 }
