@@ -6,7 +6,7 @@ import java.io.File;
 
 public abstract class CompilationConfiguration {
 
-    public static CompilationConfiguration dependencyToAll() {
+    public static CompilationConfiguration defaultCompilationConfiguration() {
         return DefaultCompilationConfiguration.INSTANCE;
     }
 

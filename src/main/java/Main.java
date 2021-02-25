@@ -50,14 +50,14 @@ public class Main {
             if (cmd.hasOption("d")) {
                 String directory = cmd.getOptionValue("d");
                 Cache cache = new Cache(createCacheFileIfNeeded("cache", "fileHashes.bin"));
-                FileManager fm = new FileManager(cache);
+                FileManager fm = new FileManager();
 
 
                 List<File> dirtyFiles = new ArrayList<>();
-                for (FileChange fc: fm.getFileChangesList("src/", ".java")) {
-                    dirtyFiles.add(fc.getFile());
-                }
-                File outputDirectory = fm.createOutputDirectoryIfNeeded("out/");
+//                for (FileChange fc: fm.getFileChanges("src/", ".java")) {
+//                    dirtyFiles.add(fc.getFile());
+//                }
+//                File outputDirectory = fm.createOutputDirectoryIfNeeded("out/");
 
 
 //                List<File> filesToCompile = new ArrayList<>();
@@ -109,9 +109,9 @@ public class Main {
         ClassDependenciesAnalyzer cda = new ClassDependenciesAnalyzer();
         ClassDependentsAccumulator acc = new ClassDependentsAccumulator();
 
-        for (File classFile : FileManager.getAllFilesInDirectory("out/", ".class")) {
-            acc.addClass(cda.getClassAnalysis(classFile));
-        }
+//        for (File classFile : FileManager.getAllFilesInDirectory("out/", ".class")) {
+//            acc.addClass(cda.getClassAnalysis(classFile));
+//        }
         ClassSetAnalysis csa = new ClassSetAnalysis(acc.getAnalysis());
 
         System.out.println(acc.getDependentsMap());

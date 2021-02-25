@@ -20,44 +20,26 @@ import java.util.stream.Stream;
 
 public class FileManager {
 
-    private final Cache cache;
-
-    public FileManager(Cache cache) {
-        this.cache = cache;
+    public File createFile(Path path) throws IOException {
+        if(!path.getParent().toFile().exists()) {
+            createDirectory(path);
+        }
+        return Files.createFile(path).toFile();
     }
 
-    public List<FileChange> getFileChangesList(String directory, String extension) throws IOException, ClassNotFoundException {
-        cache.prepareToRead();
-        Map<String, String> oldFiles = cache.get();
-        Map<String, String> newFiles = FileHasher.getHashesOf(getAllFilesInDirectory(directory, extension));
-        cache.put(newFiles);
-        cache.save();
-
-        return FileChangeDetector.getFileChanges(oldFiles, newFiles);
+    public File createDirectory(Path path) throws IOException {
+        return Files.createDirectories(path).toFile();
     }
 
-    public static List<File> getAllFilesInDirectory(String directory, String extension) {
-        try (Stream<Path> walk = Files.walk(Path.of(directory))) {
+    public List<File> getAllFilesInDirectory(Path directory, String extension) {
+        try (Stream<Path> walk = Files.walk(directory)) {
             return walk
                     .map(Path::toFile)
                     .filter(f -> f.getName().endsWith(extension))
                     .collect(Collectors.toList());
         } catch (IOException e) {
             e.printStackTrace();
-            return new ArrayList<File>();
+            return new ArrayList<>();
         }
-    }
-
-    public File createOutputDirectoryIfNeeded(String directory) throws IOException {
-        Path dir = Path.of(directory);
-        if (directoryExists(directory)) {
-            return dir.toFile();
-        }
-        return Files.createDirectory(dir).toFile();
-    }
-
-    private boolean directoryExists(String directory) {
-        File dir = new File(directory);
-        return dir.isDirectory() && dir.exists();
     }
 }
