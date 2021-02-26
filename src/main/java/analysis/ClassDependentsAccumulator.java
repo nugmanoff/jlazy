@@ -96,7 +96,7 @@ public class ClassDependentsAccumulator {
     }
 
     public ClassSetAnalysisData getAnalysis() {
-        return new ClassSetAnalysisData(ImmutableSet.copyOf(seenClasses), getDependentsMap(), getClassesToConstants(), fullRebuildCause);
+        return new ClassSetAnalysisData(getDependentsMap(), getClassesToConstants(), fullRebuildCause);
     }
 
 }

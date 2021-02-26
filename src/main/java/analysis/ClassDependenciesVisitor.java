@@ -26,7 +26,6 @@ public class ClassDependenciesVisitor extends ClassVisitor {
     }
 
     public static ClassAnalysis analyze(String className, ClassReader reader) {
-        System.out.println("className: " + className);
         ClassDependenciesVisitor visitor = new ClassDependenciesVisitor(new ClassRelevancyFilter(className), reader);
         reader.accept(visitor, ClassReader.SKIP_DEBUG | ClassReader.SKIP_FRAMES);
 

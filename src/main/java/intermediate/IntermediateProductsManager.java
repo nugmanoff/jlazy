@@ -26,7 +26,9 @@ public class IntermediateProductsManager {
 
     public boolean areConsistent() {
         // Использует наивную стратегию на существование всех файлов. В перспективе можно переделать на более умную проверку.
-        return intermediateProducts.stream().anyMatch(intermediateProduct -> !intermediateProduct.exists());
+        return new File(compilationConfiguration.getMetadataDirectory() + "/" + "classToSourceMapping.lock").exists()
+                && new File(compilationConfiguration.getMetadataDirectory() + "/" + "analysis.lock").exists()
+                && new File(compilationConfiguration.getMetadataDirectory() + "/" + "fileHashes.lock").exists();
     }
 
     public void createAll() {
@@ -46,6 +48,11 @@ public class IntermediateProductsManager {
         intermediateProducts.add(sourceFileHashes);
     }
 
+    public void readAll() {
+        createAll();
+        intermediateProducts.forEach(IntermediateProduct::read);
+    }
+
     public void deleteAll() {
         intermediateProducts.forEach(IntermediateProduct::delete);
     }
@@ -59,17 +66,7 @@ public class IntermediateProductsManager {
         };
     }
 
-    public void save() {
+    public void saveAll() {
         intermediateProducts.forEach(IntermediateProduct::write);
     }
 }
-
-//    private void prepareIntermediateProducts() throws IOException {
-//        File metadataDirectory = compilationConfiguration.getMetadataDirectory();
-//
-//        File classToSourceMappingFile = fileManager.createFile(Paths.get(metadataDirectory.getName() + "/" + "classToSourceMapping.lock"));
-//        ClassToSourceMapping mapping = new ClassToSourceMapping(classToSourceMappingFile, ArrayListMultimap.<String, String>create());
-//
-//        File persistedClassSetAnalysisFile = fileManager.createFile(Paths.get(metadataDirectory.getName() + "/" + "classSetAnalysis.lock"));
-////        PersistedClassSetAnalysis analysis = new PersistedClassSetAnalysis(persistedClassSetAnalysisFile)
-//    }

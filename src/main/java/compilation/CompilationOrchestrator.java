@@ -50,14 +50,21 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
         // 2. Достаём необходимые для сборки intermediate products
         if (!intermediateProductsManager.areConsistent()) {
             // Если не существует какой-то из intermediate products -> делаем полную перекомпиляцию
+            System.out.println("Clean compilation started");
             compilationStrategy = new CleanCompilationStrategy(fileManager, compilationConfiguration, intermediateProductsManager);
         } else {
             // Если все intermediate products существует вот правильной форме  -> запускаем инкрементальную компиляцию
-            compilationStrategy = new IncrementalCompilationStrategy(compiler, compilationConfiguration);
+            System.out.println("Incremental compilation started");
+            compilationStrategy = new IncrementalCompilationStrategy(fileManager, compilationConfiguration, intermediateProductsManager);
         }
 
         // 3. Достаём файлы нужные для компиляции
         List<File> filesToCompile = compilationStrategy.getFilesToCompile();
+
+        if(filesToCompile.isEmpty()) {
+            System.out.println("Nothing to compile!");
+            return;
+        }
 
         // 4. Создаём задание компиляции и запускаем
         JavaCompiler.CompilationTask task = getCompilationTask(filesToCompile);
@@ -71,6 +78,7 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
         Iterable<? extends JavaFileObject> sources = compilerFileManager.getJavaFileObjectsFromFiles(filesToCompile);
         try {
             compilerFileManager.setLocation(StandardLocation.CLASS_OUTPUT, Collections.singletonList(compilationConfiguration.getOutputDirectory()));
+            compilerFileManager.setLocation(StandardLocation.CLASS_PATH, Collections.singletonList(compilationConfiguration.getOutputDirectory()));
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -81,12 +89,12 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
 
     @Override
     public Map<String, Collection<String>> handleCompilationResult(Map<String, Collection<String>> incrementalCompilationMapping) {
-        SourceFileHashes fileHashes = (SourceFileHashes) intermediateProductsManager.retrieve("hashes");
         ClassToSourceMapping mapping = (ClassToSourceMapping) intermediateProductsManager.retrieve("mapping");
         ListMultimap<String, String> multimap = ArrayListMultimap.create();
         incrementalCompilationMapping.forEach(multimap::putAll);
         mapping.mergeIncrementalMappingsIntoOldMappings(new ArrayList<>(), multimap);
-        fileHashes.write();
+
+        intermediateProductsManager.saveAll();
         return null;
     }
 }
