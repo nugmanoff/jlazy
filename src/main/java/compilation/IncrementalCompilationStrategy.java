@@ -27,6 +27,8 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
     private CompilationConfiguration configuration;
     private IntermediateProductsManager intermediateProductsManager;
 
+    private List<String> deletedFileNames;
+
     public IncrementalCompilationStrategy(FileManager fileManager, CompilationConfiguration configuration, IntermediateProductsManager intermediateProductsManager) {
         this.fileManager = fileManager;
         this.configuration = configuration;
@@ -37,10 +39,11 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
     public List<File> getFilesToCompile() {
         intermediateProductsManager.readAll();
 
+        File srcDirectory = configuration.getSourcesDirectory();
         SourceFileHashes fileHashes = (SourceFileHashes) intermediateProductsManager.retrieve("hashes");
         Map<String, String> oldFiles = (Map<String, String>) fileHashes.getObject();
 
-        List<File> allSourceFiles = fileManager.getAllFilesInDirectory(configuration.getSourcesDirectory().toPath(), ".java");
+        List<File> allSourceFiles = fileManager.getAllFilesInDirectory(srcDirectory.toPath(), ".java");
         Map<String, String> newFiles = FileHasher.getHashesOf(allSourceFiles);
         List<FileChange> fileChanges = FileChangeDetector.getFileChanges(oldFiles, newFiles);
         fileHashes.setObject(newFiles);
@@ -55,14 +58,24 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
                 .map(fileChange -> fileChange.getFile())
                 .collect(Collectors.toList());
 
+        Path srcPath = Path.of(srcDirectory.getAbsolutePath());
+        List<String> deletedFileNames = fileChanges
+                .stream()
+                .filter(fileChange -> fileChange.getType() == FileChange.Type.REMOVE)
+                .map(fileChange -> srcPath.relativize(Path.of(fileChange.getFile().getAbsolutePath())).toString())
+                .map(deletedFileName -> srcDirectory.getName() + "/" + deletedFileName)
+                .collect(Collectors.toList());
+
+        this.deletedFileNames = deletedFileNames;
+        System.out.println("Deleted files: " + deletedFileNames);
+
         System.out.println("Dirty files: " + dirtyFiles);
 
         List<String> dirtyClasses = new ArrayList<>();
 
         for (File dirtyFile : dirtyFiles) {
-            Path srcPath = Path.of(configuration.getSourcesDirectory().getAbsolutePath());
             Path dirtyFilePath = Path.of(dirtyFile.getAbsolutePath());
-            dirtyClasses.addAll(converter.getClassNames(configuration.getSourcesDirectory().getName() + "/" + srcPath.relativize(dirtyFilePath).toString()));
+            dirtyClasses.addAll(converter.getClassNames(srcDirectory.getName() + "/" + srcPath.relativize(dirtyFilePath).toString()));
         }
 
         System.out.println("Dirty classes: " + dirtyClasses);
@@ -89,5 +102,9 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
         System.out.println("Recompiled files: " + actualFilesToCompile);
 
         return new ArrayList<>(actualFilesToCompile);
+    }
+
+    public List<String> getDeletedFileNames() {
+        return deletedFileNames;
     }
 }

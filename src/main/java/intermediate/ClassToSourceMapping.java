@@ -42,13 +42,11 @@ public class ClassToSourceMapping extends IntermediateProduct {
         writeSourceClassesMappingFile((Multimap<String, String>) object);
     }
 
-    public void mergeIncrementalMappingsIntoOldMappings(List<FileChange> fileChanges, Multimap<String, String> mappingsDuringIncrementalCompilation) {
+    public void mergeIncrementalMappingsIntoOldMappings(List<String> deletedFileNames, Multimap<String, String> mappingsDuringIncrementalCompilation) {
         read();
         Multimap<String, String> oldMappings = (Multimap<String, String>) object;
-        fileChanges.stream()
-                    .filter(fileChange -> fileChange.getType() == FileChange.Type.REMOVE)
-                    .forEach(fileChange -> oldMappings.removeAll(fileChange.getFile().getName()));
-    //                .map(FileChange::getNormalizedPath)
+        System.out.println("deleted file names during merge: " + deletedFileNames);
+        deletedFileNames.forEach(oldMappings::removeAll);
 
         mappingsDuringIncrementalCompilation.keySet().forEach(oldMappings::removeAll);
 

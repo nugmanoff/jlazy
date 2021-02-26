@@ -62,6 +62,7 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
         List<File> filesToCompile = compilationStrategy.getFilesToCompile();
 
         if(filesToCompile.isEmpty()) {
+            handleCompilationResult(new HashMap<>());
             System.out.println("Nothing to compile!");
             return;
         }
@@ -69,9 +70,6 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
         // 4. Создаём задание компиляции и запускаем
         JavaCompiler.CompilationTask task = getCompilationTask(filesToCompile);
         task.call();
-    }
-
-    private void saveIntermediateProducts() {
     }
 
     private JavaCompiler.CompilationTask getCompilationTask(List<File> filesToCompile) {
@@ -83,18 +81,22 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
             e.printStackTrace();
         }
         JavaCompiler.CompilationTask task = compiler.getTask(null, compilerFileManager, null, null, null, sources);
-//        new ObservedCompilationTask(task, null, (Consumer<Map<String, Collection<String>>>) mapping -> mapping.writeSourceClassesMappingFile(mappingFile, mapping));
         return new ObservedCompilationTask(task, null, this);
     }
 
     @Override
-    public Map<String, Collection<String>> handleCompilationResult(Map<String, Collection<String>> incrementalCompilationMapping) {
+    public void handleCompilationResult(Map<String, Collection<String>> incrementalCompilationMapping) {
+        List<String> deletedFileNames = new ArrayList<>();
+
+        if (compilationStrategy instanceof IncrementalCompilationStrategy) {
+            deletedFileNames = ((IncrementalCompilationStrategy) compilationStrategy).getDeletedFileNames();
+        }
+
         ClassToSourceMapping mapping = (ClassToSourceMapping) intermediateProductsManager.retrieve("mapping");
         ListMultimap<String, String> multimap = ArrayListMultimap.create();
         incrementalCompilationMapping.forEach(multimap::putAll);
-        mapping.mergeIncrementalMappingsIntoOldMappings(new ArrayList<>(), multimap);
+        mapping.mergeIncrementalMappingsIntoOldMappings(deletedFileNames, multimap);
 
         intermediateProductsManager.saveAll();
-        return null;
     }
 }
