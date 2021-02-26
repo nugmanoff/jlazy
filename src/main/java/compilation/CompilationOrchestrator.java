@@ -1,10 +1,14 @@
 package compilation;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import file.FileHasher;
 import file.FileManager;
 import intermediate.ClassToSourceMapping;
-import intermediate.IntermediateProduct;
 import intermediate.IntermediateProductsManager;
+import intermediate.SourceFileHashes;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -12,10 +16,9 @@ import javax.tools.StandardJavaFileManager;
 import javax.tools.StandardLocation;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Paths;
 import java.util.*;
 
-public class CompilationOrchestrator {
+public class CompilationOrchestrator implements ObservedCompilationResultHandler {
 
     final JavaCompiler compiler;
     final FileManager fileManager;
@@ -31,7 +34,7 @@ public class CompilationOrchestrator {
         this.fileManager = fileManager;
         this.compilationConfiguration = compilationConfiguration;
         compilerFileManager = compiler.getStandardFileManager(null, null, null);
-        intermediateProductsManager = new IntermediateProductsManager(compilationConfiguration);
+        intermediateProductsManager = new IntermediateProductsManager(compilationConfiguration, fileManager);
     }
 
     public void performCompilation(String sourceDirectoryName, String classpath) {
@@ -64,8 +67,6 @@ public class CompilationOrchestrator {
     private void saveIntermediateProducts() {
     }
 
-
-
     private JavaCompiler.CompilationTask getCompilationTask(List<File> filesToCompile) {
         Iterable<? extends JavaFileObject> sources = compilerFileManager.getJavaFileObjectsFromFiles(filesToCompile);
         try {
@@ -75,7 +76,17 @@ public class CompilationOrchestrator {
         }
         JavaCompiler.CompilationTask task = compiler.getTask(null, compilerFileManager, null, null, null, sources);
 //        new ObservedCompilationTask(task, null, (Consumer<Map<String, Collection<String>>>) mapping -> mapping.writeSourceClassesMappingFile(mappingFile, mapping));
-        saveIntermediateProducts();
-        return task;
+        return new ObservedCompilationTask(task, null, this);
+    }
+
+    @Override
+    public Map<String, Collection<String>> handleCompilationResult(Map<String, Collection<String>> incrementalCompilationMapping) {
+        SourceFileHashes fileHashes = (SourceFileHashes) intermediateProductsManager.retrieve("hashes");
+        ClassToSourceMapping mapping = (ClassToSourceMapping) intermediateProductsManager.retrieve("mapping");
+        ListMultimap<String, String> multimap = ArrayListMultimap.create();
+        incrementalCompilationMapping.forEach(multimap::putAll);
+        mapping.mergeIncrementalMappingsIntoOldMappings(new ArrayList<>(), multimap);
+        fileHashes.write();
+        return null;
     }
 }

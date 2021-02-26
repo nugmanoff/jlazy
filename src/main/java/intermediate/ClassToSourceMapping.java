@@ -32,19 +32,43 @@ public class ClassToSourceMapping extends IntermediateProduct {
         super(file, object);
     }
 
-    private static final int BUFFER_SIZE = 65536;
+    @Override
+    public void read() {
+        setObject(readSourceClassesMappingFile());
+    }
 
-    public static Multimap<String, String> readSourceClassesMappingFile(File mappingFile) {
+    @Override
+    public void write() {
+        writeSourceClassesMappingFile((Multimap<String, String>) object);
+    }
+
+    public void mergeIncrementalMappingsIntoOldMappings(List<FileChange> fileChanges, Multimap<String, String> mappingsDuringIncrementalCompilation) {
+        read();
+        Multimap<String, String> oldMappings = (Multimap<String, String>) object;
+        fileChanges.stream()
+                    .filter(fileChange -> fileChange.getType() == FileChange.Type.REMOVE)
+                    .forEach(fileChange -> oldMappings.removeAll(fileChange.getFile().getName()));
+    //                .map(FileChange::getNormalizedPath)
+
+        mappingsDuringIncrementalCompilation.keySet().forEach(oldMappings::removeAll);
+
+        oldMappings.putAll(mappingsDuringIncrementalCompilation);
+
+        writeSourceClassesMappingFile(oldMappings);
+    }
+
+    private Multimap<String, String> readSourceClassesMappingFile() {
         Multimap<String, String> sourceClassesMapping = MultimapBuilder.SetMultimapBuilder
                 .hashKeys()
                 .hashSetValues()
                 .build();
-        if (!mappingFile.isFile()) {
+
+        if (!file.isFile()) {
             return sourceClassesMapping;
         }
 
         try {
-            Files.asCharSource(mappingFile, Charsets.UTF_8).readLines(new LineProcessor<Void>() {
+            Files.asCharSource(file, Charsets.UTF_8).readLines(new LineProcessor<Void>() {
                 private String currentFile;
 
                 @Override
@@ -69,9 +93,10 @@ public class ClassToSourceMapping extends IntermediateProduct {
         return sourceClassesMapping;
     }
 
-    public static void writeSourceClassesMappingFile(File mappingFile, Map<String, Collection<String>> mapping) {
-        try (Writer wrt = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(mappingFile, false), StandardCharsets.UTF_8), BUFFER_SIZE)) {
-            for (Map.Entry<String, Collection<String>> entry : mapping.entrySet()) {
+    private void writeSourceClassesMappingFile(Multimap<String, String> mapping) {
+        Map<String, Collection<String>> rawMapping = mapping.asMap();
+        try (Writer wrt = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file, false), StandardCharsets.UTF_8))) {
+            for (Map.Entry<String, Collection<String>> entry : rawMapping.entrySet()) {
                 wrt.write(entry.getKey() + "\n");
                 for (String className : entry.getValue()) {
                     wrt.write(" " + className + "\n");
@@ -81,26 +106,5 @@ public class ClassToSourceMapping extends IntermediateProduct {
             throw new UncheckedIOException(e);
         }
     }
-
-    public static void writeSourceClassesMappingFile(File mappingFile, Multimap<String, String> mapping) {
-        writeSourceClassesMappingFile(mappingFile, mapping.asMap());
-    }
-
-    public static void mergeIncrementalMappingsIntoOldMappings(File sourceClassesMappingFile,
-                                                               List<FileChange> fileChanges,
-                                                               Multimap<String, String> oldMappings) {
-        Multimap<String, String> mappingsDuringIncrementalCompilation = readSourceClassesMappingFile(sourceClassesMappingFile);
-
-        StreamSupport.stream(fileChanges.spliterator(), false)
-                .filter(fileChange -> fileChange.getType() == FileChange.Type.REMOVE)
-//                .map(FileChange::getNormalizedPath)
-                .forEach(oldMappings::removeAll);
-        mappingsDuringIncrementalCompilation.keySet().forEach(oldMappings::removeAll);
-
-        oldMappings.putAll(mappingsDuringIncrementalCompilation);
-
-        writeSourceClassesMappingFile(sourceClassesMappingFile, oldMappings);
-    }
-
 }
 

@@ -16,14 +16,14 @@ import java.util.function.Function;
 public class ObservedCompilationTask implements JavaCompiler.CompilationTask {
 
     private final Function<File, Optional<String>> relativize;
-    private final Consumer<Map<String, Collection<String>>> onComplete;
     private final JavacTask delegate;
+    private final ObservedCompilationResultHandler handler;
 
     public ObservedCompilationTask(JavaCompiler.CompilationTask delegate,
                                    Function<File, Optional<String>> relativize,
-                                   Consumer<Map<String, Collection<String>>> onComplete) {
+                                   ObservedCompilationResultHandler handler) {
         this.relativize = relativize;
-        this.onComplete = onComplete;
+        this.handler = handler;
         if (delegate instanceof JavacTask) {
             this.delegate = (JavacTask) delegate;
         } else {
@@ -52,7 +52,7 @@ public class ObservedCompilationTask implements JavaCompiler.CompilationTask {
         try {
             return delegate.call();
         } finally {
-            onComplete.accept(collector.getMapping());
+            handler.handleCompilationResult(collector.getMapping());
         }
     }
 

@@ -29,8 +29,9 @@ public class CleanCompilationStrategy implements CompilationStrategy {
     @Override
     public List<File> getFilesToCompile() {
         intermediateProductsManager.deleteAll();
-        intermediateProductsManager.setup();
+        intermediateProductsManager.createAll();
 
+        fileManager.createDirectory(configuration.getOutputDirectory().toPath());
         List<File> allSourceFiles = fileManager.getAllFilesInDirectory(configuration.getSourcesDirectory().toPath(), ".java");
 
         Map<String, String> hashesMap = FileHasher.getHashesOf(allSourceFiles);

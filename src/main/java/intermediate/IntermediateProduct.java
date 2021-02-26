@@ -6,8 +6,8 @@ import java.io.*;
 
 public abstract class IntermediateProduct {
 
-    private final File file;
-    private Object object;
+    final File file;
+    Object object;
 
     public IntermediateProduct(File file, Object object) {
         this.file = file;
@@ -18,6 +18,10 @@ public abstract class IntermediateProduct {
         return file.exists();
     }
 
+    public Object getObject() {
+        return object;
+    }
+
     public void setObject(Object object) {
         this.object = object;
     }
@@ -26,12 +30,16 @@ public abstract class IntermediateProduct {
         file.delete();
     }
 
-    public Object read() throws IOException, ClassNotFoundException {
-        FileInputStream fis = new FileInputStream(file);
-        ObjectInputStream ois = new ObjectInputStream(fis);
-        Object obj = ois.readObject();
-        ois.close();
-        return obj;
+    public void read() {
+        try {
+            FileInputStream fis = new FileInputStream(file);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            Object obj = ois.readObject();
+            ois.close();
+            setObject(obj);
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
     public void write() {

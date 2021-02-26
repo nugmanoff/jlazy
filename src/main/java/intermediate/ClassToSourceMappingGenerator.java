@@ -24,7 +24,7 @@ import java.util.function.Function;
 //    }
 
 public class ClassToSourceMappingGenerator implements TaskListener {
-    private final Map<File, Optional<String>> relativePaths = new HashMap<>();
+//    private final Map<File, Optional<String>> relativePaths = new HashMap<>();
     private final Map<String, Collection<String>> mapping = new HashMap<>();
     private final Function<File, Optional<String>> relativize;
     private final Elements elements;
@@ -67,7 +67,8 @@ public class ClassToSourceMappingGenerator implements TaskListener {
     }
 
     private Optional<String> findRelativePath(File asSourceFile) {
-        return relativePaths.computeIfAbsent(asSourceFile, relativize);
+//        relativePaths.computeIfAbsent(asSourceFile, relativize);
+        return Optional.ofNullable(asSourceFile.toPath().toString());
     }
 
     private String normalizeName(TypeElement typeElement) {

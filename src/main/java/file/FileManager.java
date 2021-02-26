@@ -18,14 +18,19 @@ public class FileManager {
             return path.toFile();
         }
         if(!path.getParent().toFile().exists()) {
-            createDirectory(path);
+            createDirectory(path.getParent());
         }
         return Files.createFile(path).toFile();
     }
 
     // Создаёт директорию, и необходимые родительские директории, если это необходимо
-    public File createDirectory(Path path) throws IOException {
-        return Files.createDirectories(path).toFile();
+    public File createDirectory(Path path) {
+        try {
+            return Files.createDirectories(path).toFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     // Достаёт из директории все файлы с определённым расширением
