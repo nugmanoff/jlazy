@@ -36,6 +36,6 @@ public abstract class CompilationStrategy {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return compiler.getTask(null, compilerFileManager, null, null, null, sources);
+        return new IncrementalCompilationTask(compiler.getTask(null, compilerFileManager, null, null, null, sources), null, null);
     }
 }
