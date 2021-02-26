@@ -1,5 +1,8 @@
 package analysis;
 
+import intermediate.IntermediateProduct;
+
+import java.io.File;
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
