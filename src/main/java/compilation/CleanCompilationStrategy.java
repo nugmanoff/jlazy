@@ -1,23 +1,42 @@
 package compilation;
 
+import analysis.ClassDependenciesAnalyzer;
+import analysis.ClassDependentsAccumulator;
+import analysis.ClassSetAnalysis;
+import file.FileHasher;
+import file.FileManager;
+import intermediate.IntermediateProductsManager;
+import intermediate.SourceFileHashes;
+
 import javax.tools.*;
 import java.io.File;
 import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
-public class CleanCompilationStrategy extends CompilationStrategy {
+public class CleanCompilationStrategy implements CompilationStrategy {
 
-    public CleanCompilationStrategy(JavaCompiler compiler, CompilationConfiguration configuration) {
-        super(compiler, configuration);
+    private FileManager fileManager;
+    private CompilationConfiguration configuration;
+    private IntermediateProductsManager intermediateProductsManager;
+
+
+    public CleanCompilationStrategy(FileManager fileManager, CompilationConfiguration configuration, IntermediateProductsManager intermediateProductsManager) {
+        this.fileManager = fileManager;
+        this.configuration = configuration;
+        this.intermediateProductsManager = intermediateProductsManager;
     }
 
     @Override
     public List<File> getFilesToCompile() {
-        /*
-            1. Get `allSourceFiles`
-            2. Return `allSourceFiles`
-         */
-        return null;
+        intermediateProductsManager.deleteAll();
+        intermediateProductsManager.setup();
+
+        List<File> allSourceFiles = fileManager.getAllFilesInDirectory(configuration.getSourcesDirectory().toPath(), ".java");
+
+        Map<String, String> hashesMap = FileHasher.getHashesOf(allSourceFiles);
+        SourceFileHashes fileHashes = (SourceFileHashes) intermediateProductsManager.retrieve("hashes");
+        fileHashes.setObject(hashesMap);
+
+        return allSourceFiles;
     }
 }

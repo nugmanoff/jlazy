@@ -9,10 +9,10 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 
-public class IncrementalCompilationStrategy extends CompilationStrategy {
+public class IncrementalCompilationStrategy implements CompilationStrategy {
 
     public IncrementalCompilationStrategy(JavaCompiler compiler, CompilationConfiguration configuration) {
-        super(compiler, configuration);
+
     }
 
     @Override

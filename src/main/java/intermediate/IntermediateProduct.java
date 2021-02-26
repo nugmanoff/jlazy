@@ -1,22 +1,32 @@
 package intermediate;
 
+import compilation.CompilationConfiguration;
+
 import java.io.*;
 
 public abstract class IntermediateProduct {
 
     private final File file;
-    private final Object object;
+    private Object object;
 
-    protected IntermediateProduct(File file, Object object) {
+    public IntermediateProduct(File file, Object object) {
         this.file = file;
         this.object = object;
     }
 
-    boolean exists() {
+    public boolean exists() {
         return file.exists();
     }
 
-    Object read() throws IOException, ClassNotFoundException {
+    public void setObject(Object object) {
+        this.object = object;
+    }
+
+    public void delete() {
+        file.delete();
+    }
+
+    public Object read() throws IOException, ClassNotFoundException {
         FileInputStream fis = new FileInputStream(file);
         ObjectInputStream ois = new ObjectInputStream(fis);
         Object obj = ois.readObject();
@@ -24,10 +34,14 @@ public abstract class IntermediateProduct {
         return obj;
     }
 
-    void write() throws IOException {
-        FileOutputStream fos = new FileOutputStream(file);
-        ObjectOutputStream oos = new ObjectOutputStream(fos);
-        oos.writeObject(object);
-        fos.close();
+    public void write() {
+        try {
+            FileOutputStream fos = new FileOutputStream(file);
+            ObjectOutputStream oos = new ObjectOutputStream(fos);
+            oos.writeObject(object);
+            fos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

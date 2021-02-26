@@ -5,6 +5,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
+import compilation.CompilationConfiguration;
 import file.FileChange;
 
 import java.io.*;
@@ -27,7 +28,7 @@ import java.util.stream.StreamSupport;
 
 public class ClassToSourceMapping extends IntermediateProduct {
 
-    protected ClassToSourceMapping(File file, Object object) {
+    public ClassToSourceMapping(File file, Object object) {
         super(file, object);
     }
 
@@ -102,3 +103,4 @@ public class ClassToSourceMapping extends IntermediateProduct {
     }
 
 }
+

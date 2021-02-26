@@ -1,4 +1,4 @@
-package compilation;
+package intermediate;
 
 import com.sun.source.util.TaskEvent;
 import com.sun.source.util.TaskListener;
@@ -13,6 +13,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.TreeSet;
 import java.util.function.Function;
+
+
+//    public Optional<String> relativize(File sourceFile) {
+//        return sourceRoots.stream()
+//                .filter(sourceDir -> sourceFile.getAbsolutePath().startsWith(sourceDir.getAbsolutePath()))
+//                .map(sourceDir -> RelativePathUtil.relativePath(sourceDir, sourceFile))
+//                .filter(relativePath -> !relativePath.startsWith(".."))
+//                .findFirst();
+//    }
 
 public class ClassToSourceMappingGenerator implements TaskListener {
     private final Map<File, Optional<String>> relativePaths = new HashMap<>();

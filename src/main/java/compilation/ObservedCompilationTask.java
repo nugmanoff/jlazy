@@ -1,6 +1,7 @@
 package compilation;
 
 import com.sun.source.util.JavacTask;
+import intermediate.ClassToSourceMappingGenerator;
 
 import javax.annotation.processing.Processor;
 import javax.tools.JavaCompiler;
@@ -12,15 +13,15 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-public class IncrementalCompilationTask implements JavaCompiler.CompilationTask {
+public class ObservedCompilationTask implements JavaCompiler.CompilationTask {
 
     private final Function<File, Optional<String>> relativize;
     private final Consumer<Map<String, Collection<String>>> onComplete;
     private final JavacTask delegate;
 
-    public IncrementalCompilationTask(JavaCompiler.CompilationTask delegate,
-                                  Function<File, Optional<String>> relativize,
-                                  Consumer<Map<String, Collection<String>>> onComplete) {
+    public ObservedCompilationTask(JavaCompiler.CompilationTask delegate,
+                                   Function<File, Optional<String>> relativize,
+                                   Consumer<Map<String, Collection<String>>> onComplete) {
         this.relativize = relativize;
         this.onComplete = onComplete;
         if (delegate instanceof JavacTask) {
