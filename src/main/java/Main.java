@@ -4,6 +4,7 @@ import file.FileManager;
 import org.apache.commons.cli.*;
 
 import javax.tools.*;
+import java.io.File;
 import java.io.IOException;
 
 public class Main {
@@ -27,11 +28,55 @@ public class Main {
 
         try {
             cmd = parser.parse(options, args);
+            String directory = null;
+            String classpath = null;
             if (cmd.hasOption("d")) {
-                String directory = cmd.getOptionValue("d");
-                CompilationOrchestrator orchestrator = new CompilationOrchestrator(ToolProvider.getSystemJavaCompiler(), new FileManager(), CompilationConfiguration.defaultCompilationConfiguration());
-                orchestrator.performCompilation(directory, ".");
+                directory = cmd.getOptionValue("d");
             }
+            if (cmd.hasOption("cp")) {
+                classpath = cmd.getOptionValue("cp");
+            }
+            if (directory == null) {
+                throw new ParseException("");
+            }
+            if (classpath == null) {
+                classpath = ".";
+            }
+            String finalDirectory = directory;
+            String finalClasspath = classpath;
+            CompilationConfiguration compilationConfiguration = new CompilationConfiguration() {
+                @Override
+                public Iterable<String> getCompilerOptions() {
+                    return null;
+                }
+
+                @Override
+                public File getMetadataDirectory() {
+                    return new File(".jlazy/");
+                }
+
+                @Override
+                public File getOutputDirectory() {
+                    return new File("out/");
+                }
+
+                @Override
+                public File getSourcesDirectory() {
+                    if (finalDirectory.endsWith("/")) {
+                        return new File(finalDirectory);
+                    } else {
+                        return new File(finalDirectory + "/");
+                    }
+                }
+
+                @Override
+                public File getClasspathDirectory() {
+                    return new File(finalClasspath);
+                }
+            };
+
+            CompilationOrchestrator orchestrator = new CompilationOrchestrator(ToolProvider.getSystemJavaCompiler(), new FileManager(), compilationConfiguration);
+            orchestrator.performCompilation();
         } catch (ParseException e) {
             System.out.println("Error parsing command-line arguments!");
             HelpFormatter formatter = new HelpFormatter();

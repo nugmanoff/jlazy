@@ -17,11 +17,11 @@ public class ClassSetAnalysis {
         this.classAnalysis = classAnalysis;
     }
 
-    public DependentsSet getRelevantDependents(Iterable<String> classes, Set<Integer> constants) {
+    public DependentsSet getRelevantDependents(Iterable<String> classes) {
         final Set<String> accessibleResultClasses = new LinkedHashSet<>();
         final Set<String> privateResultClasses = new LinkedHashSet<>();
         for (String cls : classes) {
-            DependentsSet d = getRelevantDependents(cls, constants);
+            DependentsSet d = getRelevantDependents(cls);
             if (d.isDependencyToAll()) {
                 return d;
             }
@@ -37,12 +37,12 @@ public class ClassSetAnalysis {
         return DependentsSet.dependents(privateResultClasses, accessibleResultClasses);
     }
 
-    public DependentsSet getRelevantDependents(String className, Set<Integer> constants) {
+    public DependentsSet getRelevantDependents(String className) {
         DependentsSet deps = getDependents(className);
         if (deps.isDependencyToAll()) {
             return deps;
         }
-        if (!constants.isEmpty()) {
+        if (deps.isDependencyToAll()) {
             return DependentsSet.dependencyToAll();
         }
 
@@ -73,7 +73,12 @@ public class ClassSetAnalysis {
                                          Set<String> accessibleResultClasses,
                                          Iterable<String> privateDependentClasses,
                                          Iterable<String> accessibleDependentClasses) {
-
+        for (String privateDependentClass : privateDependentClasses) {
+            if (!visitedClasses.add(privateDependentClass)) {
+                continue;
+            }
+            privateResultClasses.add(privateDependentClass);
+        }
         processTransitiveDependentClasses(visitedClasses, accessibleResultClasses, accessibleDependentClasses);
     }
 

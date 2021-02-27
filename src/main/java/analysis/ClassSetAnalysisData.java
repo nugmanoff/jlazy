@@ -12,7 +12,7 @@ public class ClassSetAnalysisData {
     private final Map<String, Set<Integer>> classesToConstants;
     private final String fullRebuildCause;
 
-    public ClassSetAnalysisData( Map<String, DependentsSet> dependents, Map<String, Set<Integer>> classesToConstants, String fullRebuildCause) {
+    public ClassSetAnalysisData(Map<String, DependentsSet> dependents, Map<String, Set<Integer>> classesToConstants, String fullRebuildCause) {
         this.dependents = dependents;
         this.classesToConstants = classesToConstants;
         this.fullRebuildCause = fullRebuildCause;
@@ -29,6 +29,6 @@ public class ClassSetAnalysisData {
 
 
     public Set<Integer> getConstants(String className) {
-        return classesToConstants.get(className);
+        return classesToConstants.computeIfAbsent(className, clazzName -> new HashSet<>());
     }
 }

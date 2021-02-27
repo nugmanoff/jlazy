@@ -50,12 +50,6 @@ public class ClassDependenciesVisitor extends ClassVisitor {
         }
     }
 
-    @Override
-    public ModuleVisitor visitModule(String name, int access, String version) {
-        dependencyToAll = true;
-        return null;
-    }
-
     // performs a fast analysis of classes referenced in bytecode (method bodies)
     // avoiding us to implement a costly visitor and potentially missing edge cases
     private void collectRemainingClassDependencies(ClassReader reader) {
@@ -113,6 +107,7 @@ public class ClassDependenciesVisitor extends ClassVisitor {
             // otherwise we miss the case where a class defines several constants with the same value, or when
             // two values are switched
             constants.add((name + '|' + value).hashCode()); //non-private const
+            dependencyToAll = true;
         }
         return new FieldVisitor();
     }
@@ -167,7 +162,7 @@ public class ClassDependenciesVisitor extends ClassVisitor {
         }
     }
 
-    private class FieldVisitor extends org.objectweb.asm.FieldVisitor {
+    private static class FieldVisitor extends org.objectweb.asm.FieldVisitor {
         protected FieldVisitor() {
             super(API);
         }

@@ -18,7 +18,6 @@ dependencies {
     implementation group: 'commons-cli', name: 'commons-cli', version: '1.4'
     implementation group: 'commons-io', name: 'commons-io', version: '2.8.0'
     implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
-
 }
 
 test {

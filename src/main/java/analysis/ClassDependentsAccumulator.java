@@ -25,8 +25,7 @@ public class ClassDependentsAccumulator {
 
     public void addClass(String className, boolean dependencyToAll, Iterable<String> privateClassDependencies, Iterable<String> accessibleClassDependencies, Set<Integer> constants) {
         if (seenClasses.contains(className)) {
-            // same classes may be found in different classpath trees/jars
-            // and we keep only the first one
+            // в принципе, такая ситуация пока невозможно, потому что только один classpath entry
             return;
         }
         seenClasses.add(className);
@@ -54,10 +53,6 @@ public class ClassDependentsAccumulator {
         return dependents.computeIfAbsent(className, k -> new HashSet<>());
     }
 
-    /*
-        key -> className
-        value -> analysis.DependentsSet (which is whether (mutually exclusive) DependencyToAll, or DefaultDependentsSet with Accessible & Private Dependents)
-    */
     @VisibleForTesting
     public Map<String, DependentsSet> getDependentsMap() {
         if (dependenciesToAll.isEmpty() && privateDependents.isEmpty() && accessibleDependents.isEmpty()) {
@@ -82,7 +77,7 @@ public class ClassDependentsAccumulator {
     }
 
     @VisibleForTesting
-    Map<String, Set<Integer>> getClassesToConstants() {
+    public Map<String, Set<Integer>> getClassesToConstants() {
         return classesToConstants.build();
     }
 

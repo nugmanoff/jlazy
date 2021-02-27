@@ -18,6 +18,8 @@ public abstract class CompilationConfiguration {
 
     public abstract File getSourcesDirectory();
 
+    public abstract File getClasspathDirectory();
+
     private static class DefaultCompilationConfiguration extends CompilationConfiguration {
         private static final CompilationConfiguration.DefaultCompilationConfiguration INSTANCE = new CompilationConfiguration.DefaultCompilationConfiguration();
 
@@ -39,6 +41,11 @@ public abstract class CompilationConfiguration {
         @Override
         public File getSourcesDirectory() {
             return new File("src/");
+        }
+
+        @Override
+        public File getClasspathDirectory() {
+            return new File(".");
         }
     }
 }

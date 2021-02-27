@@ -37,8 +37,8 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
         intermediateProductsManager = new IntermediateProductsManager(compilationConfiguration, fileManager);
     }
 
-    public void performCompilation(String sourceDirectoryName, String classpath) {
-        File sourceDirectory = new File(sourceDirectoryName);
+    public void performCompilation() {
+        File sourceDirectory = compilationConfiguration.getSourcesDirectory();
 
         // 1. Проверяем не пустая ли папка компиляции
         if (Objects.requireNonNull(sourceDirectory.listFiles()).length == 0) {

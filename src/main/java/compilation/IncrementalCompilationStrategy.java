@@ -1,9 +1,6 @@
 package compilation;
 
-import analysis.ClassAnalysis;
-import analysis.ClassDependenciesAnalyzer;
-import analysis.ClassDependentsAccumulator;
-import analysis.ClassSetAnalysis;
+import analysis.*;
 import com.google.common.collect.Multimap;
 import file.*;
 import intermediate.ClassToSourceMapping;
@@ -90,7 +87,14 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
         }
 
         ClassSetAnalysis csa = new ClassSetAnalysis(acc.getAnalysis());
-        Set<String> actualClassesToCompile = csa.getRelevantDependents(dirtyClasses, new HashSet<>()).getAllDependentClasses();
+        DependentsSet relevantDependents = csa.getRelevantDependents(dirtyClasses);
+
+        if (relevantDependents.isDependencyToAll()) {
+            System.out.println("Full rebuild: dependency to all found");
+            System.out.println("Files to recompile: " + allSourceFiles);
+            return allSourceFiles;
+        }
+        Set<String> actualClassesToCompile = relevantDependents.getAllDependentClasses();
 
         Set<File> actualFilesToCompile = new HashSet<>();
 
@@ -99,7 +103,7 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
         }
 
         actualFilesToCompile.addAll(dirtyFiles);
-        System.out.println("Recompiled files: " + actualFilesToCompile);
+        System.out.println("Files to recompile: " + actualFilesToCompile);
 
         return new ArrayList<>(actualFilesToCompile);
     }
