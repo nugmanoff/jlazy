@@ -12,17 +12,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Read and write a file recording source file to class names mapping.
- *
- * The file format is:
- *
- * relative/path/to/source/root/MyGroovyClass.groovy
- * org.gradle.MyGroovyClass
- * org.gradle.MyGroovyClass$1
- * org.gradle.MyGroovyClass$Inner
- */
-
 public class ClassToSourceMapping extends IntermediateProduct {
 
     public ClassToSourceMapping(File file, Object object) {
