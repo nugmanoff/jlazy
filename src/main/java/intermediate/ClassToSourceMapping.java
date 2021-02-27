@@ -5,15 +5,12 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.io.Files;
 import com.google.common.io.LineProcessor;
-import compilation.CompilationConfiguration;
-import file.FileChange;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.StreamSupport;
 
 /**
  * Read and write a file recording source file to class names mapping.
@@ -45,7 +42,7 @@ public class ClassToSourceMapping extends IntermediateProduct {
     public void mergeIncrementalMappingsIntoOldMappings(List<String> deletedFileNames, Multimap<String, String> mappingsDuringIncrementalCompilation) {
         read();
         Multimap<String, String> oldMappings = (Multimap<String, String>) object;
-        System.out.println("deleted file names during merge: " + deletedFileNames);
+        System.out.println("@ JLazy > Маппинги удалённые во время мерджа >" + deletedFileNames);
         deletedFileNames.forEach(oldMappings::removeAll);
 
         mappingsDuringIncrementalCompilation.keySet().forEach(oldMappings::removeAll);
@@ -70,7 +67,7 @@ public class ClassToSourceMapping extends IntermediateProduct {
                 private String currentFile;
 
                 @Override
-                public boolean processLine(String line) throws IOException {
+                public boolean processLine(String line)  {
                     if (line.startsWith(" ")) {
                         sourceClassesMapping.put(currentFile, line.substring(1));
                     } else {

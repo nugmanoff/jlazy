@@ -2,13 +2,9 @@ package compilation;
 
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import file.FileHasher;
 import file.FileManager;
 import intermediate.ClassToSourceMapping;
 import intermediate.IntermediateProductsManager;
-import intermediate.SourceFileHashes;
 
 import javax.tools.JavaCompiler;
 import javax.tools.JavaFileObject;
@@ -42,19 +38,18 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
 
         // 1. Проверяем не пустая ли папка компиляции
         if (Objects.requireNonNull(sourceDirectory.listFiles()).length == 0) {
-            // TODO Replace with proper logging
-            System.out.println("Nothing to compile!");
+            System.out.println("@ JLazy > Нечего компилировать!");
             return;
         }
 
         // 2. Достаём необходимые для сборки intermediate products
         if (!intermediateProductsManager.areConsistent()) {
             // Если не существует какой-то из intermediate products -> делаем полную перекомпиляцию
-            System.out.println("Clean compilation started");
+            System.out.println("@ JLazy > Стартует чистая компиляция!");
             compilationStrategy = new CleanCompilationStrategy(fileManager, compilationConfiguration, intermediateProductsManager);
         } else {
             // Если все intermediate products существует вот правильной форме  -> запускаем инкрементальную компиляцию
-            System.out.println("Incremental compilation started");
+            System.out.println("@ JLazy > Стартует инкрементальная компиляция!");
             compilationStrategy = new IncrementalCompilationStrategy(fileManager, compilationConfiguration, intermediateProductsManager);
         }
 
@@ -63,7 +58,7 @@ public class CompilationOrchestrator implements ObservedCompilationResultHandler
 
         if(filesToCompile.isEmpty()) {
             handleCompilationResult(new HashMap<>());
-            System.out.println("Nothing to compile!");
+            System.out.println("@ JLazy > Нечего компилировать!");
             return;
         }
 

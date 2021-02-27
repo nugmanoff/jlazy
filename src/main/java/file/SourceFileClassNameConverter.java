@@ -24,11 +24,7 @@ public class SourceFileClassNameConverter {
         return sourceClassesMapping.get(sourceFileRelativePath);
     }
 
-    public boolean isEmpty() {
-        return classSourceMapping.isEmpty();
-    }
-
-    public Optional<String> getRelativeSourcePath(String fqcn) {
-        return Optional.ofNullable(classSourceMapping.get(fqcn));
+    public Optional<String> getRelativeSourcePath(String className) {
+        return Optional.ofNullable(classSourceMapping.get(className));
     }
 }

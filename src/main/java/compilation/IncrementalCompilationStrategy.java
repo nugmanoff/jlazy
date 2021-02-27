@@ -5,15 +5,9 @@ import com.google.common.collect.Multimap;
 import file.*;
 import intermediate.ClassToSourceMapping;
 import intermediate.IntermediateProductsManager;
-import intermediate.PersistedClassSetAnalysis;
 import intermediate.SourceFileHashes;
 
-import javax.tools.JavaCompiler;
-import javax.tools.JavaFileObject;
-import javax.tools.StandardJavaFileManager;
-import javax.tools.StandardLocation;
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -64,9 +58,8 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
                 .collect(Collectors.toList());
 
         this.deletedFileNames = deletedFileNames;
-        System.out.println("Deleted files: " + deletedFileNames);
 
-        System.out.println("Dirty files: " + dirtyFiles);
+        System.out.println("@ JLazy > 'Грязные файлы >'" + dirtyFiles);
 
         List<String> dirtyClasses = new ArrayList<>();
 
@@ -75,23 +68,24 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
             dirtyClasses.addAll(converter.getClassNames(srcDirectory.getName() + "/" + srcPath.relativize(dirtyFilePath).toString()));
         }
 
-        System.out.println("Dirty classes: " + dirtyClasses);
+        System.out.println("@ JLazy > 'Грязные классы >'" + dirtyClasses);
 
         List<File> allClassFiles = fileManager.getAllFilesInDirectory(configuration.getOutputDirectory().toPath(), ".class");
-        ClassDependenciesAnalyzer cda = new ClassDependenciesAnalyzer();
-        ClassDependentsAccumulator acc = new ClassDependentsAccumulator();
+
+        ClassDependenciesExtractor cda = new ClassDependenciesExtractor();
+        ClassDependentsAggregator acc = new ClassDependentsAggregator();
 
         for (File classFile : allClassFiles) {
             ClassAnalysis classAnalysis = cda.getClassAnalysis(classFile);
             acc.addClass(classAnalysis);
         }
 
-        ClassSetAnalysis csa = new ClassSetAnalysis(acc.getAnalysis());
+        AggregatedAnalysisStrategy csa = new AggregatedAnalysisStrategy(acc.getDependentsMap());
         DependentsSet relevantDependents = csa.getRelevantDependents(dirtyClasses);
 
         if (relevantDependents.isDependencyToAll()) {
-            System.out.println("Full rebuild: dependency to all found");
-            System.out.println("Files to recompile: " + allSourceFiles);
+            System.out.println("@ JLazy > Требуется полная перекомпиляция, потому что найдена зависимость которая зависит от всего");
+            System.out.println("@ JLazy > Файлы для комиляции >" + allSourceFiles);
             return allSourceFiles;
         }
         Set<String> actualClassesToCompile = relevantDependents.getAllDependentClasses();
@@ -103,7 +97,7 @@ public class IncrementalCompilationStrategy implements CompilationStrategy {
         }
 
         actualFilesToCompile.addAll(dirtyFiles);
-        System.out.println("Files to recompile: " + actualFilesToCompile);
+        System.out.println("@ JLazy > Файлы для комиляции >" + actualFilesToCompile);
 
         return new ArrayList<>(actualFilesToCompile);
     }

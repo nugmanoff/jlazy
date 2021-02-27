@@ -78,7 +78,7 @@ public class Main {
             CompilationOrchestrator orchestrator = new CompilationOrchestrator(ToolProvider.getSystemJavaCompiler(), new FileManager(), compilationConfiguration);
             orchestrator.performCompilation();
         } catch (ParseException e) {
-            System.out.println("Error parsing command-line arguments!");
+            System.out.println("Ошибка при парсинге command-line аргументов");
             HelpFormatter formatter = new HelpFormatter();
             formatter.printHelp( "jlazy", options );
             System.exit(1);

@@ -1,34 +1,27 @@
 package analysis;
 
-import com.google.common.collect.ImmutableSet;
-
-import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 public abstract class DependentsSet {
 
-    public static DependentsSet dependentClasses(Set<String> privateDependentClasses, Set<String> accessibleDependentClasses) {
-        return dependents(privateDependentClasses, accessibleDependentClasses);
+    public static DependentsSet dependentClasses(Set<String> privateDependentClasses, Set<String> publicDependentClasses) {
+        return dependents(privateDependentClasses, publicDependentClasses);
     }
 
-    public static DependentsSet dependents(Set<String> privateDependentClasses, Set<String> accessibleDependentClasses) {
-        if (privateDependentClasses.isEmpty() && accessibleDependentClasses.isEmpty()) {
+    public static DependentsSet dependents(Set<String> privateDependentClasses, Set<String> publicDependentClasses) {
+        if (privateDependentClasses.isEmpty() && publicDependentClasses.isEmpty()) {
             return empty();
         } else {
-            return new DefaultDependentsSet(ImmutableSet.copyOf(privateDependentClasses), ImmutableSet.copyOf(accessibleDependentClasses));
+            return new DefaultDependentsSet(privateDependentClasses, publicDependentClasses);
         }
     }
 
     public static DependentsSet dependencyToAll() {
         return DependencyToAll.INSTANCE;
     }
-
-    public static DependentsSet dependencyToAll(String reason) {
-        return new DependencyToAll(reason);
-    }
-
+    
     public static DependentsSet empty() {
         return EmptyDependentsSet.INSTANCE;
     }
@@ -39,12 +32,10 @@ public abstract class DependentsSet {
 
     public abstract Set<String> getPrivateDependentClasses();
 
-    public abstract Set<String> getAccessibleDependentClasses();
+    public abstract Set<String> getPublicDependentClasses();
 
     public abstract boolean isDependencyToAll();
-
-    public abstract @Nullable String getDescription();
-
+    
     private DependentsSet() {
     }
 
@@ -54,7 +45,7 @@ public abstract class DependentsSet {
     public String toString() {
         return "analysis.DependentsSet: \n" +
                 "privateDependentClasses: " + getPrivateDependentClasses() + "\n" +
-                "accessibleDependentClasses: " + getAccessibleDependentClasses() + "\n";
+                "publicDependentClasses: " + getPublicDependentClasses() + "\n";
     }
 
     private static class EmptyDependentsSet extends DependentsSet {
@@ -76,7 +67,7 @@ public abstract class DependentsSet {
         }
 
         @Override
-        public Set<String> getAccessibleDependentClasses() {
+        public Set<String> getPublicDependentClasses() {
             return Collections.emptySet();
         }
 
@@ -89,22 +80,17 @@ public abstract class DependentsSet {
         public boolean isDependencyToAll() {
             return false;
         }
-
-        @Nullable
-        @Override
-        public String getDescription() {
-            return null;
-        }
+        
     }
 
     private static class DefaultDependentsSet extends DependentsSet {
 
         private final Set<String> privateDependentClasses;
-        private final Set<String> accessibleDependentClasses;
+        private final Set<String> publicDependentClasses;
 
-        private DefaultDependentsSet(Set<String> privateDependentClasses, Set<String> accessibleDependentClasses) {
+        private DefaultDependentsSet(Set<String> privateDependentClasses, Set<String> publicDependentClasses) {
             this.privateDependentClasses = privateDependentClasses;
-            this.accessibleDependentClasses = accessibleDependentClasses;
+            this.publicDependentClasses = publicDependentClasses;
         }
 
         @Override
@@ -114,7 +100,7 @@ public abstract class DependentsSet {
 
         @Override
         public boolean hasDependentClasses() {
-            return !privateDependentClasses.isEmpty() || !accessibleDependentClasses.isEmpty();
+            return !privateDependentClasses.isEmpty() || !publicDependentClasses.isEmpty();
         }
 
         @Override
@@ -123,19 +109,19 @@ public abstract class DependentsSet {
         }
 
         @Override
-        public Set<String> getAccessibleDependentClasses() {
-            return accessibleDependentClasses;
+        public Set<String> getPublicDependentClasses() {
+            return publicDependentClasses;
         }
 
         @Override
         public Set<String> getAllDependentClasses() {
             if (privateDependentClasses.isEmpty()) {
-                return accessibleDependentClasses;
+                return publicDependentClasses;
             }
-            if (accessibleDependentClasses.isEmpty()) {
+            if (publicDependentClasses.isEmpty()) {
                 return privateDependentClasses;
             }
-            Set<String> r = new HashSet<>(accessibleDependentClasses);
+            Set<String> r = new HashSet<>(publicDependentClasses);
             r.addAll(privateDependentClasses);
             return r;
         }
@@ -144,49 +130,34 @@ public abstract class DependentsSet {
         public boolean isDependencyToAll() {
             return false;
         }
-
-        @Override
-        public String getDescription() {
-            return null;
-        }
     }
 
     private static class DependencyToAll extends DependentsSet {
         private static final DependencyToAll INSTANCE = new DependencyToAll();
 
-        private final String reason;
-
-        private DependencyToAll(String reason) {
-            this.reason = reason;
-        }
-
-        private DependencyToAll() {
-            this(null);
-        }
-
         @Override
         public boolean isEmpty() {
-            throw new UnsupportedOperationException("This instance of dependents set does not have dependent classes information.");
+            throw new UnsupportedOperationException("Операция недоступна");
         }
 
         @Override
         public boolean hasDependentClasses() {
-            throw new UnsupportedOperationException("This instance of dependents set does not have dependent classes information.");
+            throw new UnsupportedOperationException("Операция недоступна");
         }
 
         @Override
         public Set<String> getPrivateDependentClasses() {
-            throw new UnsupportedOperationException("This instance of dependents set does not have dependent classes information.");
+            throw new UnsupportedOperationException("Операция недоступна");
         }
 
         @Override
-        public Set<String> getAccessibleDependentClasses() {
-            throw new UnsupportedOperationException("This instance of dependents set does not have dependent classes information.");
+        public Set<String> getPublicDependentClasses() {
+            throw new UnsupportedOperationException("Операция недоступна");
         }
 
         @Override
         public Set<String> getAllDependentClasses() {
-            throw new UnsupportedOperationException("This instance of dependents set does not have dependent classes information.");
+            throw new UnsupportedOperationException("Операция недоступна");
         }
 
         @Override
@@ -194,9 +165,5 @@ public abstract class DependentsSet {
             return true;
         }
 
-        @Override
-        public String getDescription() {
-            return reason;
-        }
     }
 }

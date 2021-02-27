@@ -1,16 +1,11 @@
 package compilation;
 
-import analysis.ClassDependenciesAnalyzer;
-import analysis.ClassDependentsAccumulator;
-import analysis.ClassSetAnalysis;
 import file.FileHasher;
 import file.FileManager;
 import intermediate.IntermediateProductsManager;
 import intermediate.SourceFileHashes;
 
-import javax.tools.*;
 import java.io.File;
-import java.io.IOException;
 import java.util.*;
 
 public class CleanCompilationStrategy implements CompilationStrategy {
@@ -37,6 +32,8 @@ public class CleanCompilationStrategy implements CompilationStrategy {
         Map<String, String> hashesMap = FileHasher.getHashesOf(allSourceFiles);
         SourceFileHashes fileHashes = (SourceFileHashes) intermediateProductsManager.retrieve("hashes");
         fileHashes.setObject(hashesMap);
+
+        System.out.println("@ JLazy > Файлы для комиляции >" + allSourceFiles);
 
         return allSourceFiles;
     }

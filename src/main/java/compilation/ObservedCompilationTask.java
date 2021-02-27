@@ -47,7 +47,7 @@ public class ObservedCompilationTask implements JavaCompiler.CompilationTask {
 
     @Override
     public Boolean call() {
-        ClassToSourceMappingGenerator collector = new ClassToSourceMappingGenerator(relativize, delegate.getElements());
+        ClassToSourceMappingGenerator collector = new ClassToSourceMappingGenerator(delegate.getElements());
         delegate.addTaskListener(collector);
         try {
             return delegate.call();
